@@ -6,53 +6,22 @@
 %%% 1st subsection and last subsection requires changing filepaths, if needed
 %%% This code removes pts with lk<0.7
 clc
-close all 
 clear all
 %% Change paths according to experiment 
 % folder in which all csv files to analyze are stored (remove all other csv files)
 
 %cd C:\Users\mona.nashashibi\Work\Matlab\Tests\Code_entier 
 
-% Mouse 45
-% cd  D:\M45\C4\C4_centroid % path to files
-% destination_path =  'D:\M45\C4\C4_centroid'; % Where to save results 
-
-% Mouse 186
-%cd D:\M186\C4_centroid
-%destination_path = 'D:\M186\C4_centroid';
-
-% Mouse 423
-cd D:\M423\C4_centroid
-destination_path = 'D:\M423\C4_centroid';
-
-% Mouse 451
-% cd D:\M451\C4\C4_centroid
-% destination_path = 'D:\M451\C4\C4_centroid';
-
-% Mouse 567
-% cd D:\M567\C4\C4_centroid
-% destination_path = 'D:\M567\C4\C4_centroid';
+cd  D:\M45\C4\C4_centroid % path to files
+destination_path =  'D:\M45\C4\C4_centroid'; % Where to save results 
 
 % Mouse 674
 % cd  D:\M674\C4_2\C4_2_centroid
 % destination_path = 'D:\M674\C4_2\C4_2_centroid';
 
 % Mouse 749
-%  cd D:\M749\C4\C4_centroid
-%  destination_path = 'D:\M749\C4\C4_centroid';
-
-% Mouse 716
-% cd D:\M716\C4_centroid
-% destination_path = 'D:\M716\C4_centroid';
-
-% Mouse 763
-% cd D:\M763\C4_centroid
-% destination_path = 'D:\M763\C4_centroid';
-
-% Mouse 328
-% cd D:\M328\C4\C4_centroid
-% destination_path = 'D:\M328\C4\C4_centroid';
-
+% cd D:\M749\C4\C4_centroid
+% destination_path = 'D:\M749\C4\C4_centroid';
 %% Import csv files in a cell and shorten name 
 % Sry : summary : choice of cam and coordinates given best camera 
 % Cc : centroid coordinates 
@@ -93,26 +62,29 @@ for k=1:size(Cell,2)  %k=nb of csv files ; j= nb of lk_corr to calculate ; i=row
     Frames_ms=T{:,1}./0.025;
     T=[T(:,1) array2table(Frames_ms) T(:,2:end)];
     Tarray=table2array(T);
-    index=5:3:32; % cols corrsponding to lk in table 
+    index=5:3:32; % cols corrsponding to lk in table, first at col 5, then every 3 columns up to column 32
     lk_corr=zeros(size(Tarray,1),length(index));
     for j=1:length(index)
 
         if Tarray(1,index(j))>0.7 && Tarray(2,index(j))>0.7
-            lk_corr(1,j)=1;
+            lk_corr(1,j)=1; % les deux premiers lk > 0.7
         else
             lk_corr(1,j)=0;
         end
 
         for i=2:size(Tarray,1)-1
-            if (Tarray(i,index(j))>0.7 && (Tarray(i-1,index(j))>0.7||Tarray(i+1,index(j))>0.7))||(Tarray(i-1,index(j))>0.7 && Tarray(i+1,index(j))>0.7)
-                lk_corr(i,j)=1;
+            if ( Tarray(i,index(j))>0.7 && (Tarray(i-1,index(j))>0.7||Tarray(i+1,index(j))>0.7))||...
+               (Tarray(i-1,index(j))>0.7 && Tarray(i+1,index(j))>0.7)
+                lk_corr(i,j)=1; % 1 si le lk de la ligne courante et d'une ligne adjacente >0.7 ou 
+                                        % si le lk des deux lignes
+                                        % adjacentes >0.7
             else
                 lk_corr(i,j)=0;
             end
         end
         
         if Tarray(size(Tarray,1)-1,index(j))>0.7 && Tarray(size(Tarray,1),index(j))>0.7
-            lk_corr(size(Tarray,1),j)=1;
+            lk_corr(size(Tarray,1),j)=1; % les deux derniers lk >0.7
         else
             lk_corr(size(Tarray,1),j)=2;
         end
@@ -142,18 +114,18 @@ Results{6,1}="Nb_bp_per_time";
 for nb_condition_expm=1:size(Cell,2)/2
     num_row=[size(Cell{2,nb_condition_expm},1) size(Cell{2,size(Cell,2)./2+nb_condition_expm},1)];
     nb_rows_summary=min(num_row);
-    T1=table2array(Cell{2,nb_condition_expm});
-    T2=table2array(Cell{2,size(Cell,2)./2+nb_condition_expm});
+    T1=table2array(Cell{2,nb_condition_expm}); % T1 for ch1
+    T2=table2array(Cell{2,size(Cell,2)./2+nb_condition_expm}); % T2 for ch2
     T1(nb_rows_summary+1:end,:)=[];
     T2(nb_rows_summary+1:end,:)=[];
     Sry=[];
     Sry(:,1:2)=T1(:,1:2);
-    % Sry : Scorer (numero of frame) -> col 2
+    % Sry : Scorer (numero of frame) -> col 1
     % Frame (ms) -> col 2 
     % Cam ? -> col 3
 
     for i=1:nb_rows_summary
-        if T1(i,43)>T2(i,43)
+        if T1(i,43)>T2(i,43) % choice of camera
             Sry(i,3)=1;
         else
             Sry(i,3)=2;
@@ -161,7 +133,7 @@ for nb_condition_expm=1:size(Cell,2)/2
     end
 
     %Same cam if lk equals -> col 4
-    if T1(1,43)>T2(1,43)
+    if T1(1,43)>T2(1,43) % choice of cam, 1st frame
         Sry(1,4)=1;
     else
         Sry(1,4)=2;
@@ -177,21 +149,51 @@ for nb_condition_expm=1:size(Cell,2)/2
 
     
     % Best cam, at least >3s recording -> col 5
+    % 3s @25fps => 75 frames
 
-    if (Sry(1,4)==1 && sum(Sry(i+1:i+74,4)==74)) ||(Sry(1,4)==1 && sum(Sry(i+1:i+74,4))~=148)
+%L:    if (Sry(1,4)==1 && sum(Sry(i+1:i+74,4)==74)) ||(Sry(1,4)==1 && sum(Sry(i+1:i+74,4))~=148)
+    if (sum(Sry(1:75,4)-75<=75/2)) % si la majorité des frames des 3 premieres 
+                                                        % secondes est
+                                                        % meilleure avec
+                                                        % cam 1 => on
+                                                        % démarre avec
+                                                        % cam1, sinon on
+                                                        % démarre avec cam2
         Sry(1,5)=1;
     else
         Sry(1,5)=2;
     end
 
     for i=2:nb_rows_summary-74
-        if (Sry(i,4)==1 && sum(Sry(i+1:i+74,4))==74)||(Sry(i,4)==1 && Sry(i-1,5)==1)||(Sry(i,4)==2 && sum(Sry(i+1:i+74,4))~=148 && Sry(i-1,5)==1)
+        % Tableau des différents cas pour choisir la caméra courante
+        % les trois premiers cas représentent directement le code et les
+        % suivants sont déduits de ce comportement
+        % ------------------------------------------------------------------------------
+        % | cam img     | cam img  | cam 3s  || cam choisie
+        % | précédente | courante | à venir   || pour frame courante
+        % ------------------------------------------------------------------------------
+        % | 1                | 1             |  -           ||   1
+        % | -                 | 1             | 1           ||   1
+        % | 1                | 2             | 1 et 2    ||    1
+        % --------------------------------------------------------------------------------
+        % | 1                | 1             | -            ||   1
+        % | 1                | 2             | 1 et 2     ||   1
+        % | 1                | 2             | 2           ||  2
+        % | 2                | 2             | -            || 2
+        % | 2                | 1             | 1 et 2    || 2
+        % | 2                | 1             | 1           || 1
+        if (Sry(i,4)==1 && sum(Sry(i+1:i+74,4))==74)||...
+                (Sry(i,4)==1 && Sry(i-1,5)==1)||...
+                (Sry(i,4)==2 && sum(Sry(i+1:i+74,4))~=148 && Sry(i-1,5)==1)
             Sry(i,5)=1;
         else
             Sry(i,5)=2;
         end
     end
 
+    % pour les trois dernières secondes, on ne change plus de caméra et on
+    % reste sur celle qui était choisie sur la première image de cette
+    % période de 3 s
     for i=nb_rows_summary-74:nb_rows_summary
         if Sry(i,4)==1
            Sry(i,5)=1;
@@ -225,18 +227,18 @@ for nb_condition_expm=1:size(Cell,2)/2
 
     % Calculus coord_x (cox) and coord_y (coy) while removing points for
     % which lk<0.7
-    rowcol=zeros(size(Sry,1),10);
-    Coxlk=zeros(size(Sry,1),10);
-    Coylk=zeros(size(Sry,1),10);
-    Cc=zeros(size(Sry,1),14);
-    for num_frame=1:size(Sry,1)
+    rowcol=zeros(size(Sry,1),10); % pour chaque frame (ligne du tableau), liste des points trouvés (en colonne)
+    Coxlk=zeros(size(Sry,1),10); % pour chaque frame (ligne du tableau), liste des coordonnées X des points valides
+    Coylk=zeros(size(Sry,1),10); % pour chaque frame (ligne du tableau), liste des coordonnées Y des points valides
+    Cc=zeros(size(Sry,1),14); % Centroid coordinates
+    for num_frame=1:size(Sry,1) % for each frame
         Lk_find=find(Sry(num_frame,9:3:36)>0.7);
-        Lk_find(end+1:10)=missing;
-        rowcol(num_frame,:)= Lk_find;
+        Lk_find(end+1:10)=missing; % complete with NaN values to always get 10 values
+        rowcol(num_frame,:)= Lk_find; 
 
-        Coxlk_find=Sry(num_frame,4+3*rmmissing(rowcol(num_frame,:)));
-        Coxlk_find(:,end+1:10)=missing;
-        Coxlk(num_frame,:)= Coxlk_find;
+        Coxlk_find=Sry(num_frame,4+3*rmmissing(rowcol(num_frame,:))); % get x coordinates of points founds
+        Coxlk_find(:,end+1:10)=missing;  % complete with NaN values to get 10 values
+        Coxlk(num_frame,:)= Coxlk_find; % put into the array Coxlk
         Coylk_find=Sry(num_frame,5+3*rmmissing(rowcol(num_frame,:)));
         Coylk_find(:,end+1:10)=missing;
         Coylk(num_frame,:)= Coylk_find;
@@ -246,19 +248,19 @@ for nb_condition_expm=1:size(Cell,2)/2
         Coxlkrm=rmmissing(Coxlk(num_frame,:));
         Coylkrm=rmmissing(Coylk(num_frame,:));
         R=[];
-        v=1:length(Coxlkrm);
-        A=3:1:length(Coxlkrm);
+        v=1:length(Coxlkrm);  % 1, 2, 3, ... , num of x coordinates
+        A=3:1:length(Coxlkrm);  % 3, 4, ..., num of coordinates
 
 
         for nb_points_dans_combi=1:length(A)
-            K=nchoosek(v,A(nb_points_dans_combi));
-            L=K;
+            K=nchoosek(v,A(nb_points_dans_combi)); % liste les combinaisons de 3, 4... points parmi tous les points
+            L=K; 
             L(:,end+1:10)=missing;
 
             for nb_combi_par_pts=1:size(K,1)
                 x=Coxlkrm(:,K(nb_combi_par_pts,1:end));
                 y=Coylkrm(:,K(nb_combi_par_pts,1:end));
-                R=[R;polyarea(x,y) L(nb_combi_par_pts,1:end)];
+                R=[R;polyarea(x,y) L(nb_combi_par_pts,1:end)]; % tableau avec l'aire du polygone et la liste des points associés
             end
         end
 
@@ -274,17 +276,26 @@ for nb_condition_expm=1:size(Cell,2)/2
         if isempty(R)==1
             Cc(num_frame,:)=missing;
         else
-            [rowmax,~]=find(R==max(R(1:end,1)));
-            xmax=Coxlk(num_frame,rmmissing(R(rowmax,2:end)));
-            ymax=Coylk(num_frame,rmmissing(R(rowmax,2:end)));
-            %pgns=polyshape(Coxlk(7,:),Coylk(7,:),'Simplify',false,'KeepCollinearPoints',true); % pg non simplifié est meilleur ?
+            [rowmax,~]=find(R==max(R(1:end,1)));  % choisit le polygone avec l'aire maximum
+            xmax=Coxlk(num_frame,rmmissing(R(rowmax,2:end))); % récupère la liste des coordonnées x
+                                                                                                % des points du polygone d'aire max
+            ymax=Coylk(num_frame,rmmissing(R(rowmax,2:end))); % récupère la liste des coordonnées y
+                                                                                                % des points du polygone d'aire max
+            %pgns=polyshape(Coxlk(7,:),Coylk(7,:),'Simplify',false,'KeepCollinearPoints',true); % pg non simplifiÃ© est meilleur ?
             %pgs=polyshape(Coxlk(7,:),Coylk(7,:),'Simplify',true,'KeepCollinearPoints',false);
             pg=polyshape(xmax,ymax);
             [xc,yc]=centroid(pg);
             %Cc=[Cc;(j-1) (j-1).*40 xc yc];
-            pos=rowcol(num_frame,rmmissing(R(rowmax,2:end)));
+            pos=rowcol(num_frame,rmmissing(R(rowmax,2:end))); 
             pos(:,end+1:10)=missing;
-            Cc(num_frame,:)=[(num_frame-1) (num_frame-1).*40 xc yc pos];
+            Cc(num_frame,:)=[(num_frame-1) (num_frame-1).*40 xc yc pos]; % num_frame-1 parce qu'on commence à 0 
+                                                                                                            % et num_frame commence à 1
+             % CC contient pour chaque frame:
+             %    - numero de la frame (à partir de 0)
+             %    - time de la frame en ms
+             %    - coord x du centroide
+             %    - coord y du centroide
+             %    - liste des points trouvés
         end
     end
 
@@ -297,6 +308,14 @@ nb_total_frame=size(Cc_array,1);
 spd=zeros(nb_total_frame,4);
 spd(1,:)=missing;
 tilt=[];
+% content of spd
+% 1 ligne par image
+% chaque ligne:
+%  1: time of frame
+%  2: vitesse du centroide en X sur l'image
+%  3: vitesse du centroide en Y sur l'image
+%  4: vitesse du centroide sur l'image
+% tilt est un vecteur des temps auquels la caméra a changé
 for frame=2:nb_total_frame
     spd(frame,3)=(Cc_array(frame,3)-Cc_array(frame-1,3))/(Cc_array(frame,2)-Cc_array(frame-1,2));
     spd(frame,4)=(Cc_array(frame,4)-Cc_array(frame-1,4))/(Cc_array(frame,2)-Cc_array(frame-1,2));
@@ -310,11 +329,11 @@ end
 
 %%% without cam
 spd_wo_cam=spd; 
-spd_wo_cam(1+(tilt/40),:)=missing;
+spd_wo_cam(1+(tilt/40),:)=missing; % Change the speed data to NaN when the camera changed
 
-spd_max=max(spd_wo_cam(:,2));
-x=spd_wo_cam(:,1)/1000;
-y=spd_wo_cam(:,2)/spd_max;
+spd_max=max(spd_wo_cam(:,2)); % vitesse max en X
+x=spd_wo_cam(:,1)/1000;  % time en s
+y=spd_wo_cam(:,2)/spd_max;  % ratio de x speed / x speed max
 
 y_filtered=medfilt1(y,18);
 y_wo_movmean=smoothdata(y_filtered,'movmean');
@@ -377,6 +396,7 @@ end
 
 %% Export Results (each expm condition is in the same excel file)
 %Export Sry and Cc, analysis_table, percent_bp, nb_bp_per_time
+display('exporting data')
 
 for i=2:size(Results,2)
     writetable(Results{2,i},fullfile(destination_path,...
@@ -405,8 +425,8 @@ end
 
 %Export Analysis table 
 for i=2:size(Results,2)
-    %writetable(Results{4,i},fullfile('C:\Users\mona.nashashibi\Work\Matlab\Tests\Results',...
-     writetable(Results{4,i},fullfile(destination_path , sprintf('Analysis_table%s.txt',Results{1,i})));
+    writetable(Results{4,i},fullfile(destination_path,...
+        sprintf('Analysis_table%s.txt',Results{1,i})));
 end
 
 sprintf('End')
