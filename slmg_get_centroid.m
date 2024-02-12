@@ -1,3 +1,15 @@
+function [] = slmg_get_centroid(path_to_experiment)
+%PATH_TO_EXPERIMENT Function based on Mona's Code_centroid_all_bp but
+%wrapped in a function.
+%   Analyze csv files from deeplabcut and return coordinates and likelihood per camera,choice of camera,
+%   coordinates of bodyparts with best cam at every frame, and coordinates
+%   of centroid.
+%   All bp are taken into account
+%   !  Make sure the files in the folder are ordered by name, and not by date
+%    1st subsection and last subsection requires changing filepaths, if needed
+%    This code removes pts with lk<0.7
+
+
 %%% Analyze csv files from deeplabcut and return coordinates and likelihood per camera,choice of camera,
 %%% coordinates of bodyparts with best cam at every frame, and coordinates
 %%% of centroid. 
@@ -5,57 +17,20 @@
 %%% ! Make sure the files in the folder are ordered by name, and not by date 
 %%% 1st subsection and last subsection requires changing filepaths, if needed
 %%% This code removes pts with lk<0.7
-clc
-close all 
-clear all
+
 %% Change paths according to experiment 
 % folder in which all csv files to analyze are stored (remove all other csv files)
 
-%cd C:\Users\mona.nashashibi\Work\Matlab\Tests\Code_entier 
+% One folder per mouse
+ if exist(path_to_experiment, 'dir')
+    cd(path_to_experiment);
+    destination_path =path_to_experiment;
 
-% Mouse 45
-% cd  D:\M45\C4\C4_centroid % path to files
-% destination_path =  'D:\M45\C4\C4_centroid'; % Where to save results 
+else
+    fprintf('The specified path does not exist or is not a directory.\n');
+    return; % Exit the function
+ end
 
-% Mouse 186
-%cd D:\M186\C4_centroid
-%destination_path = 'D:\M186\C4_centroid';
-
-% Mouse 423
-%cd D:\M423\C4_centroid
-%destination_path = 'D:\M423\C4_centroid';
-
-% Mouse 451
-% cd D:\M451\C4\C4_centroid
-% destination_path = 'D:\M451\C4\C4_centroid';
-
-% Mouse 567
-% cd D:\M567\C4\C4_centroid
-% destination_path = 'D:\M567\C4\C4_centroid';
-
-% Mouse 674
-% cd  D:\M674\C4_2\C4_2_centroid
-% destination_path = 'D:\M674\C4_2\C4_2_centroid';
-
-% Mouse 749
-%  cd D:\M749\C4\C4_centroid
-%  destination_path = 'D:\M749\C4\C4_centroid';
-
-% Mouse 716
-% cd D:\M716\C4_centroid
-% destination_path = 'D:\M716\C4_centroid';
-
-% Mouse 763
-% cd D:\M763\C4_centroid
-% destination_path = 'D:\M763\C4_centroid';
-
-% Mouse 328
-% cd D:\M328\C4\C4_centroid
-% destination_path = 'D:\M328\C4\C4_centroid';
-
-% Mouse 755
-cd \\l2export\iss02.nerb\nerb-md\decimotiv\Decimotiv_Recording\DREADD_Project\1_PoseAnalysis\742_CNO_3_0
-destination_path = '\\l2export\iss02.nerb\nerb-md\decimotiv\Decimotiv_Recording\DREADD_Project\1_PoseAnalysis\742_CNO_3_0';
 
 
 %% Import csv files in a cell and shorten name 
@@ -415,3 +390,6 @@ for i=2:size(Results,2)
 end
 
 sprintf('End')
+
+end
+
