@@ -1,26 +1,40 @@
-function [] = slmg_get_centroid(path_to_experiment)
-%PATH_TO_EXPERIMENT Function based on Mona's Code_centroid_all_bp but
-%wrapped in a function.
-%   Analyze csv files from deeplabcut and return coordinates and likelihood per camera,choice of camera,
-%   coordinates of bodyparts with best cam at every frame, and coordinates
-%   of centroid.
-%   All bp are taken into account
+function [Cc, Sry, Cc_array] = slmg_get_centroid(path_to_experiment)
+
+%SLMG_GET_CENTROID Analyzes CSV files from DeepLabCut and returns centroid and body part coordinates.
+%   This function processes CSV files from multiple cameras to determine the coordinates and likelihood of body parts
+%   and calculates the centroid coordinates for each frame. The function performs the following steps:
+%
+%   1. Loads CSV files containing tracking data from the specified directory.
+%   2. Filters out data points with a likelihood (lk) less than 0.7 and computes corrected likelihood values.
+%   3. Determines the best camera view for each frame based on the highest likelihood and calculates body part coordinates accordingly.
+%   4. Computes the centroid of the tracked points (body parts) for each frame, considering only points with lk > 0.7.
+%   5. Computes summary metrics such as the number of visible body parts per frame and the percentage of frames each camera was chosen.
+%   6. Saves the results in Excel files including summary, centroid coordinates, analysis tables, and visibility metrics.
+%
+%   Inputs:
+%   - path_to_experiment: Path to the directory containing the CSV files to be analyzed.
+%
+%   Outputs:
+%   - Cc: Table containing the centroid coordinates and the points used for the centroid calculation for each frame.
+%   - Sry: Table summarizing the chosen camera for each frame, coordinates of body parts from the best camera, and other metrics.
+%   - Cc_array: Array form of the centroid coordinates.
+%
+%   The Excel files created are named 'Results<experiment>.xlsx' and are
+%   saved in the specified directory. Where <experiment> corresponds to the unique identifier for each experiment. These files are saved in the directory specified by path_to_experiment.
+%   The length or duration of the video analyzed can be determined from the 'Frames_ms' column in the 'Cc' table, which represents the time in milliseconds.
+
+% *Function based on Mona's Code_centroid_all_bp but wrapped in a function.
 %   !  Make sure the files in the folder are ordered by name, and not by date
 %    1st subsection and last subsection requires changing filepaths, if needed
-%    This code removes pts with lk<0.7
 
-
-%%% Analyze csv files from deeplabcut and return coordinates and likelihood per camera,choice of camera,
-%%% coordinates of bodyparts with best cam at every frame, and coordinates
-%%% of centroid. 
-%%% All bp are taken into account
-%%% ! Make sure the files in the folder are ordered by name, and not by date 
-%%% 1st subsection and last subsection requires changing filepaths, if needed
-%%% This code removes pts with lk<0.7
 
 %% Change paths according to experiment 
 % folder in which all csv files to analyze are stored (remove all other csv files)
 
+% Save the current path
+original_path = pwd;
+
+% Ensure the specified path exists
 % One folder per mouse
  if exist(path_to_experiment, 'dir')
     cd(path_to_experiment);
@@ -388,6 +402,9 @@ for i=2:size(Results,2)
     %writetable(Results{4,i},fullfile('C:\Users\mona.nashashibi\Work\Matlab\Tests\Results',...
      writetable(Results{4,i},fullfile(destination_path , sprintf('Analysis_table%s.txt',Results{1,i})));
 end
+
+% Restore the original path
+cd(original_path); 
 
 sprintf('End')
 
