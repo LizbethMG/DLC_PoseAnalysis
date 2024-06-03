@@ -1,4 +1,4 @@
-function [x_smooth, y_smooth] = slmg_preprocess(x, y, zscore_threshold, window_size, gap_threshold)
+function [x_smooth, y_smooth, pre_proc_results] = slmg_preprocess(x, y, zscore_threshold, window_size, gap_threshold)
 % slmg_preprocess - Remove outliers from DeepLabCut data using Z-score method,
 % interpolate, and apply median filter while handling large gaps.
 %
@@ -182,7 +182,6 @@ time_minutes = time_ms / 60000;
 fprintf ('______________________________\n')
 fprintf ('Summary of the pre-processing done:\n')
 fprintf ('    Recording duration: %.2f minutes at %.0f frames/seconds\n', time_minutes(end), fps)
-fprintf(' ',  zscore_threshold)
 fprintf('     Original data: \n');
 fprintf('           Number of NaN values: %d\n', x_numNaNs);
 fprintf('           Percentage of NaN values: %.2f%%\n', x_percentageNaNs);
@@ -194,6 +193,7 @@ fprintf('           Standard deviation of noise before smoothing: %.4f\n', noise
 fprintf('           Standard deviation of noise after smoothing: %.4f\n', noise_std_after);
 fprintf('           SNR improvement: %.4f dB\n', snr_improvement);
 
+pre_proc_results = [time_minutes(end), fps, x_percentageNaNs, ys_percentageNaNs, snr_improvement];
 % Plot original vs pre-processed data 
 figure;
 
